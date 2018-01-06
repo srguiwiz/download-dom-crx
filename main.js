@@ -61,7 +61,7 @@ function onExtensionLastError() {
 }
 
 function onRuntimeLastError() {
-  if (chrome.extension.lastError) {
+  if (chrome.runtime.lastError) {
     console.error(`${chrome.runtime.lastError}`);
   }
 }
