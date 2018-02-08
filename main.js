@@ -39,6 +39,7 @@ var onlyIfURIMatchesRegExp = new RegExp(onlyIfURIMatchesRegEx);
 var showFileChooserDialog = true;
 var resultNameSuffix = "-result-utc()"
 var ifConflictThen = "uniquify";
+var respectHTMLIsNotXML = true;
 
 const validIfConflictThenSet = new Set(["uniquify","overwrite"]);
 function validIfConflictThen(ifConflictThen) {
@@ -72,6 +73,7 @@ function retrieveOptions() {
     "showFileChooserDialog":showFileChooserDialog,
     "resultNameSuffix":resultNameSuffix,
     "ifConflictThen":ifConflictThen,
+    "respectHTMLIsNotXML":respectHTMLIsNotXML,
   }, got => {
     if (got.onlyIfURIMatchesRegEx) {
       onlyIfURIMatchesRegEx = got.onlyIfURIMatchesRegEx;
@@ -79,6 +81,7 @@ function retrieveOptions() {
       showFileChooserDialog = got.showFileChooserDialog;
       resultNameSuffix = got.resultNameSuffix || "";
       ifConflictThen = validIfConflictThen(got.ifConflictThen);
+      respectHTMLIsNotXML = got.respectHTMLIsNotXML;
     }
   });
 }
@@ -96,6 +99,8 @@ function onStorageChange(changes, area) {
     resultNameSuffix = changes.resultNameSuffix.newValue || "";
   if (changedItems.has("ifConflictThen")) {
     ifConflictThen = validIfConflictThen(changes.ifConflictThen.newValue);
+  if (changedItems.has("respectHTMLIsNotXML"))
+    respectHTMLIsNotXML = changes.respectHTMLIsNotXML.newValue;
   }
   //
   initializeAllTabs();
@@ -172,7 +177,7 @@ function doIt(tab) {
       //console.log("ran chrome.tabs.executeScript");
       chrome.tabs.sendMessage(
         tab.id,
-        { please: "nrvrDomSerialize" },
+        { please: "nrvrDomSerialize", respectHTMLIsNotXML: respectHTMLIsNotXML },
         response => {
           if (response && response.documentAsString) {
             //console.log("got response", response);
