@@ -26,7 +26,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         case "outerHTML":
           documentAsString = documentElement.outerHTML;
           var lineBreakRegExpMatch = lineBreakRegExp.exec(documentAsString);
-          var lineBreak = lineBreakRegExpMatch ? lineBreakRegExpMatch[1] : "/n";
+          var lineBreak = lineBreakRegExpMatch ? lineBreakRegExpMatch[1] : "\n";
           documentAsString = "<!DOCTYPE html>" + lineBreak + documentAsString;
           break;
       }
