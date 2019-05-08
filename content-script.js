@@ -14,7 +14,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       if ( message.respectHTMLIsNotXML // an option
         && documentElement.tagName === "HTML"
         && !documentElement.getAttribute("xmlns")
-        && documentToSerialize.doctype.name === "html") {
+        && (!documentToSerialize.doctype || documentToSerialize.doctype.name === "html")) {
         mode = "outerHTML";
       }
       //
@@ -27,7 +27,10 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
           documentAsString = documentElement.outerHTML;
           var lineBreakRegExpMatch = lineBreakRegExp.exec(documentAsString);
           var lineBreak = lineBreakRegExpMatch ? lineBreakRegExpMatch[1] : "\n";
-          documentAsString = "<!DOCTYPE html>" + lineBreak + documentAsString;
+          if (documentToSerialize.doctype) {
+            documentAsString =
+              "<!DOCTYPE " + documentToSerialize.doctype.name + ">" + lineBreak + documentAsString;
+          }
           break;
       }
     } catch (e) {
