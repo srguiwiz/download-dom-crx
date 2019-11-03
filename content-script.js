@@ -7,6 +7,7 @@ var lineBreakRegExp = /(\r\n|\r|\n)/
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.please === "nrvrDomSerialize") {
     var documentAsString = null; // default
+    var contentType = null; // default
     try {
       var documentToSerialize = window.top.document;
       var documentElement = documentToSerialize.documentElement;
@@ -33,10 +34,11 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
           }
           break;
       }
+      contentType = documentToSerialize.contentType;
     } catch (e) {
       console.error(e);
     } finally {
-      sendResponse({ documentAsString:documentAsString });
+      sendResponse({ documentAsString, contentType });
     }
   } else {
     sendResponse(Object.assign(message, { problem:"not understood" }));

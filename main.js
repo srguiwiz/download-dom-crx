@@ -1,7 +1,7 @@
 //
 // Simplified BSD License
 //
-// Copyright (c) 2012-2018, Nirvana Research
+// Copyright (c) 2012-2019, Nirvana Research
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -181,8 +181,10 @@ function doIt(tab) {
         response => {
           if (response && response.documentAsString) {
             //console.log("got response", response);
+            var contentType = (response.contentType || "").split(/\s*;\s*/)[0] || "text/plain"; // pick before ;
+            //console.log(`got contentType ${response.contentType}, using ${contentType}`);
             var blob = new Blob([response.documentAsString], {
-              type: 'text/plain'
+              type: contentType
             });
             var url = URL.createObjectURL(blob);
             var options = {
