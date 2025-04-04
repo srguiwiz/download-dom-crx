@@ -1,7 +1,7 @@
 //
 // Simplified BSD License
 //
-// Copyright (c) 2012-2019, Nirvana Research
+// Copyright (c) 2012-2025, Nirvana Research
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 //
 // ==============================================================================
 //
-// Idea and first implementation - Leo Baschy <srguiwiz12 AT nrvr DOT com>
+// Idea and first implementation - Leo Baschy <srguiwiz12 AT nrvnr DOT com>
 //
 
 const defaultOnlyIfURIMatchesRegEx = "^.+$";
