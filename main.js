@@ -85,7 +85,7 @@ function retrieveOptions() {
     }
   });
 }
-document.addEventListener("DOMContentLoaded", retrieveOptions);
+chrome.runtime.onInstalled.addListener(retrieveOptions);
 
 function onStorageChange(changes, area) {
   var changedItems = new Set(Object.keys(changes));
@@ -99,36 +99,30 @@ function onStorageChange(changes, area) {
     resultNameSuffix = changes.resultNameSuffix.newValue || "";
   if (changedItems.has("ifConflictThen")) {
     ifConflictThen = validIfConflictThen(changes.ifConflictThen.newValue);
-  if (changedItems.has("respectHTMLIsNotXML"))
-    respectHTMLIsNotXML = changes.respectHTMLIsNotXML.newValue;
+    if (changedItems.has("respectHTMLIsNotXML"))
+      respectHTMLIsNotXML = changes.respectHTMLIsNotXML.newValue;
   }
-  //
-  initializeAllTabs();
 }
 chrome.storage.onChanged.addListener(onStorageChange);
 
 function initializePageAction(tab) {
   if (onlyIfURIMatchesRegExp.test(tab.url)) {
-    chrome.pageAction.show(tab.id);
+    chrome.action.enable(tab.id);
   } else {
-    chrome.pageAction.hide(tab.id);
+    chrome.action.disable(tab.id);
   }
 }
 
-function initializeAllTabs() {
-  chrome.tabs.query({
-  }, tabs => {
-    if (tabs && tabs.length) {
-      for (let tab of tabs) {
-        initializePageAction(tab);
-      }
-    }
-  });
-}
-initializeAllTabs();
-
-// each time a tab is updated
+// each time a tab is updated, e.g. when navigating to a different URL
 chrome.tabs.onUpdated.addListener((id, changeInfo, tab) => {
+  if (changeInfo.status === "complete" && tab.active) {
+    initializePageAction(tab);
+  }
+});
+
+// each time a tab is activated, e.g. when switching between tabs
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  const tab = await chrome.tabs.get(activeInfo.tabId);
   initializePageAction(tab);
 });
 
@@ -170,25 +164,23 @@ function doIt(tab) {
   }
   //console.log("try downloading DOM as " + filename);
   //
-  chrome.tabs.executeScript({
-    file: "content-script.js"
-  }, result => {
-    if (result && result.length) {
-      //console.log("ran chrome.tabs.executeScript");
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["content-script.js"]
+  }).then((results) => {
+    // const result = results[0]?.result;
+    // if (result && result.length) {
+    if (results && results.length) {
+      //console.log("ran chrome.scripting.executeScript");
       chrome.tabs.sendMessage(
         tab.id,
         { please: "nrvrDomSerialize", respectHTMLIsNotXML: respectHTMLIsNotXML },
         response => {
-          if (response && response.documentAsString) {
+          var documentAsObjectURL = response?.documentAsObjectURL;
+          if (documentAsObjectURL) {
             //console.log("got response", response);
-            var contentType = (response.contentType || "").split(/\s*;\s*/)[0] || "text/plain"; // pick before ;
-            //console.log(`got contentType ${response.contentType}, using ${contentType}`);
-            var blob = new Blob([response.documentAsString], {
-              type: contentType
-            });
-            var url = URL.createObjectURL(blob);
             var options = {
-              url: url,
+              url: documentAsObjectURL,
               filename: filename,
               conflictAction: ifConflictThen, // uniquify, overwrite, prompt
               saveAs: showFileChooserDialog,
@@ -217,4 +209,6 @@ function doIt(tab) {
     }
   });
 }
-chrome.pageAction.onClicked.addListener(doIt);
+chrome.action.onClicked.addListener((tab) => {
+  doIt(tab);
+});

@@ -1,35 +1,44 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Download Serialized DOM",
   "description": "Download serialized DOM with a click, which should include changes within the page effected since loading e.g. by JavaScript.",
-  "version": "5.0.1",
+  "version": "6.0.0",
   "homepage_url": "https://github.com/srguiwiz/download-dom-crx",
   "icons": {
     "48": "downloadserializeddom48.png",
-    "96": "downloadserializeddom96.png"
+    "96": "downloadserializeddom96.png",
+    "128": "downloadserializeddom128.png"
   },
 
   "options_ui": {
-    "page": "options.html",
-    "chrome_style": true
+    "page": "options.html"
   },
 
   "background": {
-    "scripts": ["main.js"]
+    "service_worker": "main.js"
   },
 
-  "page_action": {
-    "default_icon": "downloadserializeddom48.png",
+  "action": {
+    "default_icon": {
+      "48": "downloadserializeddom48.png",
+      "96": "downloadserializeddom96.png",
+      "128": "downloadserializeddom128.png"
+    },
     "default_title": "Download Serialized DOM",
-    "chrome_style": true
+    "default_state": "disabled"
   },
 
   "permissions": [
     "storage",
     "activeTab",
     "tabs",
+    "scripting",
     "downloads"
   ],
 
-  "minimum_chrome_version": "49.0"
+  "host_permissions": [
+    "<all_urls>"
+  ],
+
+  "minimum_chrome_version": "130"
 }

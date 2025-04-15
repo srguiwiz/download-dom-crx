@@ -7,6 +7,7 @@ var lineBreakRegExp = /(\r\n|\r|\n)/
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.please === "nrvrDomSerialize") {
     var documentAsString = null; // default
+    var documentAsObjectURL = null; // default
     var contentType = null; // default
     try {
       var documentToSerialize = window.top.document;
@@ -35,10 +36,18 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
           break;
       }
       contentType = documentToSerialize.contentType;
+      //
+      // must use URL.createObjectURL in a page context, e.g. in this content script
+      contentType = (contentType || "").split(/\s*;\s*/)[0] || "text/plain"; // pick before ;
+      //console.log(`got contentType ${documentToSerialize.contentType}, using ${contentType}`);
+      var blob = new Blob([documentAsString], {
+        type: contentType
+      });
+      documentAsObjectURL = URL.createObjectURL(blob);
     } catch (e) {
       console.error(e);
     } finally {
-      sendResponse({ documentAsString, contentType });
+      sendResponse({ documentAsObjectURL, contentType });
     }
   } else {
     sendResponse(Object.assign(message, { problem:"not understood" }));
